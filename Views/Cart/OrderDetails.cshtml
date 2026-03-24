@@ -1,0 +1,173 @@
+@model SparePartsManagement.Models.Order
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.OrderId;
+}
+
+<div class="container my-5 py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-danger text-decoration-none fw-bold small">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/Cart/TrackOrder" class="text-danger text-decoration-none fw-bold small">Lịch sử đơn hàng</a></li>
+            <li class="breadcrumb-item active text-muted small" aria-current="page">Đơn #@Model.OrderId</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Main Order Info -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4 relative overflow-hidden">
+                <!-- Status specific background overlay -->
+                <div class="position-absolute top-0 end-0 bg-light rounded-circle" style="width: 200px; height: 200px; margin-top: -100px; margin-right: -100px; opacity: 0.5;"></div>
+                
+                <div class="d-flex justify-content-between align-items-md-center flex-column flex-md-row mb-4 border-bottom pb-4 z-index-2 position-relative">
+                    <div>
+                        <h3 class="fw-black mb-1">MÃ ĐƠN: <span class="text-danger">#@Model.OrderId</span></h3>
+                        <p class="text-muted mb-0 small"><i class="far fa-clock me-1"></i> Ngày đặt: @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="mt-3 mt-md-0">
+                        @if (Model.Status == 0) { <span class="badge bg-warning text-dark px-4 py-2 rounded-pill fw-bold fs-6 shadow-sm"><i class="fas fa-spinner fa-spin me-2"></i>Chờ xác nhận</span> }
+                        else if (Model.Status == 1) { <span class="badge bg-info text-white px-4 py-2 rounded-pill fw-bold fs-6 shadow-sm"><i class="fas fa-truck me-2"></i>Đang giao hàng</span> }
+                        else if (Model.Status == 2) { <span class="badge bg-success text-white px-4 py-2 rounded-pill fw-bold fs-6 shadow-sm"><i class="fas fa-check-circle me-2"></i>Đã nhận hàng</span> }
+                        else { <span class="badge bg-secondary text-white px-4 py-2 rounded-pill fw-bold fs-6 shadow-sm"><i class="fas fa-times-circle me-2"></i>Đã hủy</span> }
+
+                        <div class="mt-3 d-flex flex-column gap-2">
+                            @if (Model.Status == 0 || Model.Status == 1)
+                            {
+                                <form asp-action="CancelOrder" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.OrderId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill fw-bold"
+                                            onclick="return confirm('Bạn có chắc muốn hủy đơn hàng?');">
+                                        <i class="fas fa-xmark me-2"></i> Hủy đơn
+                                    </button>
+                                </form>
+                            }
+
+                            @if (Model.Status == 1)
+                            {
+                                <form asp-action="ConfirmReceived" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@Model.OrderId" />
+                                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill fw-bold">
+                                        <i class="fas fa-check me-2"></i> Đã nhận hàng
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold mb-4">DANH SÁCH SẢN PHẨM</h5>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle border-0 mb-0">
+                        <thead class="bg-light text-muted small text-uppercase fw-bold">
+                            <tr>
+                                <th class="py-3 ps-3 border-0 rounded-start">Sản phẩm</th>
+                                <th class="py-3 text-center border-0">Số lượng</th>
+                                <th class="py-3 text-end border-0">Đơn giá</th>
+                                <th class="py-3 text-end border-0 rounded-end pe-3">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.OrderItems != null && Model.OrderItems.Any())
+                            {
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr class="border-bottom-dashed">
+                                        <td class="py-4 ps-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-light rounded p-2 me-3" style="width: 70px; height: 70px;">
+                                                    @if (item.Product != null && !string.IsNullOrEmpty(item.Product.ImageUrl))
+                                                    {
+                                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" class="w-100 h-100 object-fit-contain" style="object-fit: contain;" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-image fa-2x text-muted opacity-25 d-flex justify-content-center align-items-center h-100"></i>
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold mb-1"><a href="/PublicProduct/Details/@item.ProductId" class="text-dark text-decoration-none hover-text-danger">@(item.Product?.Name ?? "Sản phẩm đã bị xóa")</a></h6>
+                                                    <small class="text-muted">ID: @item.ProductId</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center py-4 fw-bold">@item.Quantity</td>
+                                        <td class="text-end py-4 text-muted">@item.PriceAtOrder.ToString("N0") đ</td>
+                                        <td class="text-end py-4 fw-bold text-danger pe-3">@((item.Quantity * item.PriceAtOrder).ToString("N0")) đ</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Summary -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);">
+                <h5 class="fw-bold mb-4 border-bottom border-secondary pb-3"><i class="fas fa-file-invoice-dollar text-warning me-2"></i> TÓM TẮT THANH TOÁN</h5>
+                
+                @{
+                    decimal parsedShippingFee = 0;
+                    string addrStr = Model.ShippingAddress ?? "";
+                    if (addrStr.StartsWith("[Phí Ship:")) {
+                        int sIdx = addrStr.IndexOf(":") + 1;
+                        int eIdx = addrStr.IndexOf("đ]");
+                        if (sIdx > 0 && eIdx > sIdx) {
+                            string numClean = addrStr.Substring(sIdx, eIdx - sIdx).Replace(".", "").Replace(",", "").Trim();
+                            decimal.TryParse(numClean, out parsedShippingFee);
+                        }
+                    }
+                    
+                    decimal sumItems = Model.OrderItems?.Sum(i => i.Quantity * i.PriceAtOrder) ?? 0;
+                    decimal calcDiscount = sumItems + parsedShippingFee - Model.TotalAmount;
+                    if (calcDiscount < 0) calcDiscount = 0;
+                }
+
+                <div class="d-flex justify-content-between mb-3 text-white-50">
+                    <span>Tổng tiền hàng:</span>
+                    <span>@sumItems.ToString("N0") đ</span>
+                </div>
+                
+                @if(calcDiscount > 0) {
+                    <div class="d-flex justify-content-between mb-3 text-success">
+                        <span>Giảm giá:</span>
+                        <span>- @calcDiscount.ToString("N0") đ</span>
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between mb-3 text-info">
+                    <span>Phí vận chuyển:</span>
+                    <span class="fw-bold">@(parsedShippingFee == 0 ? "Freeship (0 đ)" : "+ " + parsedShippingFee.ToString("N0") + " đ")</span>
+                </div>
+                
+                <div class="border-top border-secondary pt-4 mt-3">
+                    <div class="d-flex justify-content-between align-items-end mb-4">
+                        <h6 class="fw-bold m-0">TỔNG CỘNG:</h6>
+                        <h3 class="fw-black text-warning m-0">@Model.TotalAmount.ToString("N0") <span class="fs-6 fw-normal">đ</span></h3>
+                    </div>
+                    
+                    <a href="/PublicProduct" class="btn btn-warning w-100 rounded-pill fw-bold shadow py-3">
+                        <i class="fas fa-arrow-left me-2"></i> TIẾP TỤC MUA SẮM
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-light">
+               <h6 class="fw-bold mb-3"><i class="fas fa-headset text-danger me-2"></i> Cần hỗ trợ?</h6>
+               <p class="small text-muted mb-3">Nếu bạn có bất kỳ vấn đề nào với đơn hàng này, vui lòng liên hệ với chúng tôi.</p>
+               <a href="mailto:support@spareparts.com" class="btn btn-outline-dark btn-sm rounded-pill fw-bold px-4">Liên hệ Hỗ trợ</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .fw-black { font-weight: 900; }
+    .border-bottom-dashed { border-bottom: 1px dashed rgba(0,0,0,0.1); }
+    .hover-text-danger:hover { color: #dc3545 !important; }
+</style>

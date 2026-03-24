@@ -1,0 +1,147 @@
+@model IEnumerable<SparePartsManagement.Models.Product>
+
+@{
+    ViewData["Title"] = "Cửa hàng Phụ Tùng";
+}
+
+<!-- Minimalist Full-Screen Hero Search Section -->
+<section class="hero-search d-flex align-items-center justify-content-center text-center" style="min-height: 100vh; background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2000&auto=format&fit=crop'); background-size: cover; background-position: center; background-attachment: fixed; padding-top: 80px;">
+    <div class="container px-4">
+        <h1 class="display-4 fw-bold mb-3 text-white" style="letter-spacing: -1px;">
+            TÌM KIẾM PHỤ TÙNG
+        </h1>
+        <p class="lead mb-5 mx-auto" style="max-width: 600px; font-weight: 400; color: rgba(255,255,255,0.8);">
+            Hơn 10,000+ sản phẩm chính hãng cho xe của bạn
+        </p>
+        <form class="mx-auto" style="max-width: 600px;" action="/PublicProduct/Search" method="get">
+            <div class="input-group shadow-lg rounded-0 p-1" style="background-color: rgba(255,255,255,0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);">
+                <input type="text" name="keyword" class="form-control border-0 shadow-none px-4 py-3 text-white" placeholder="Nhập tên phụ tùng, thương hiệu..." style="font-size: 1.1rem; border-radius: 0; background-color: transparent;">
+                <button type="submit" class="btn btn-light px-4 py-3 rounded-0 text-uppercase fw-bold" style="letter-spacing: 1px;">
+                    Tìm Kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<style>
+    .hero-search input::placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+</style>
+
+<!-- Main Store Section -->
+<div class="container my-5">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 d-none d-lg-block">
+            <div class="filter-card shadow-sm border-0 bg-white p-4 rounded-4">
+                <h5 class="filter-title fw-bold mb-4"><i class="fas fa-filter me-2 text-danger"></i>BỘ LỌC</h5>
+                
+                <form action="/PublicProduct" method="get">
+                    <div class="mb-4">
+                        <label class="fw-bold small text-muted mb-2">LOẠI PHỤ TÙNG</label>
+                        <select name="category" class="form-select border-0 bg-light rounded-pill px-3 shadow-none py-2 small fw-bold">
+                            <option value="">Tất cả loại</option>
+                            <option value="1">Lốp xe</option>
+                            <option value="2">Dầu nhớt</option>
+                            <option value="3">Ắc quy</option>
+                            <option value="4">Phanh</option>
+                            <option value="5">Đèn xe</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-bold small text-muted mb-2">HÃNG XE</label>
+                        <select name="brand" class="form-select border-0 bg-light rounded-pill px-3 shadow-none py-2 small fw-bold">
+                            <option value="">Tất cả hãng</option>
+                            <option value="1">Toyota</option>
+                            <option value="2">Honda</option>
+                            <option value="3">Yamaha</option>
+                            <option value="4">Mazda</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="fw-bold small text-muted mb-2">KHOẢNG GIÁ (VND)</label>
+                        <div class="d-flex gap-2">
+                            <input type="number" name="minPrice" class="form-control form-control-sm border-0 bg-light p-2 rounded-3 text-center" placeholder="Min">
+                            <input type="number" name="maxPrice" class="form-control form-control-sm border-0 bg-light p-2 rounded-3 text-center" placeholder="Max">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 rounded-pill fw-bold py-2 mt-2 shadow-lg">ÁP DỤNG LỌC</button>
+                    <a href="/PublicProduct" class="btn btn-link w-100 text-muted small mt-2 text-decoration-none">Xóa tất cả bộ lọc</a>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <h4 class="fw-bold m-0"><span class="text-danger">|</span> TẤT CẢ SẢN PHẨM</h4>
+                <form action="/PublicProduct" method="get" class="d-flex align-items-center gap-2 text-muted small fw-bold" id="sortForm">
+                    <!-- Preserve existing filters -->
+                    <input type="hidden" name="keyword" value="@ViewBag.Keyword" />
+                    <input type="hidden" name="category" value="@Context.Request.Query["category"]" />
+                    <input type="hidden" name="brand" value="@Context.Request.Query["brand"]" />
+                    <input type="hidden" name="minPrice" value="@Context.Request.Query["minPrice"]" />
+                    <input type="hidden" name="maxPrice" value="@Context.Request.Query["maxPrice"]" />
+                    
+                    <span>SẮP XẾP THEO:</span>
+                    <select name="sort" class="form-select form-select-sm border-0 bg-transparent text-dark p-0 fw-bold shadow-none" onchange="this.form.submit()">
+                        <option value="newest" selected="@(ViewBag.CurrentSort == "newest" || string.IsNullOrEmpty(ViewBag.CurrentSort))">Mới nhất</option>
+                        <option value="price_asc" selected="@(ViewBag.CurrentSort == "price_asc")">Giá thấp nhất</option>
+                        <option value="price_desc" selected="@(ViewBag.CurrentSort == "price_desc")">Giá cao nhất</option>
+                        <option value="oldest" selected="@(ViewBag.CurrentSort == "oldest")">Cũ nhất</option>
+                    </select>
+                </form>
+            </div>
+
+            <div class="row g-4">
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var product in Model)
+                    {
+                        <div class="col-md-6 col-xl-4 pb-3">
+                            <div class="product-card shadow-sm h-100 border-0">
+                                <div class="product-img-container">
+                                    <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "https://images.unsplash.com/photo-1541443131876-44b035dd1c51?q=80" : product.ImageUrl)" class="product-img" alt="@product.Name">
+                                    @if(product.StockQuantity < 5) {
+                                        <div class="badge bg-warning text-dark position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill small fw-bold">Sắp hết hàng</div>
+                                    }
+                                </div>
+                                <div class="product-info p-4">
+                                    <span class="product-category fw-bold small text-muted">@product.Category?.Name @(product.Brand != null ? "- " + product.Brand.Name : "")</span>
+                                    <h5 class="product-name fw-bold mt-1 mb-2 text-dark">
+                                        <a href="/PublicProduct/Details/@product.ProductId" class="text-decoration-none text-dark hover-danger">@product.Name</a>
+                                    </h5>
+                                    <div class="mb-2">
+                                        <i class="fas fa-star text-warning small"></i><i class="fas fa-star text-warning small"></i><i class="fas fa-star text-warning small"></i><i class="fas fa-star text-warning small"></i><i class="fas fa-star-half-alt text-warning small"></i>
+                                        <span class="text-muted small ms-1">(12)</span>
+                                    </div>
+                                    <div class="product-price fw-bold text-danger fs-5">@product.Price.ToString("N0") đ</div>
+                                    
+                                    <form asp-controller="Cart" asp-action="Add" method="post" class="mt-3">
+                                        <input type="hidden" name="id" value="@product.ProductId" />
+                                        <button type="submit" class="btn btn-dark w-100 rounded-pill shadow-lg fw-bold small py-2">
+                                            <i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-search fa-4x text-muted mb-4 opacity-25"></i>
+                        <h4 class="text-muted fw-bold">Không tìm thấy sản phẩm phù hợp</h4>
+                        <p class="text-muted small">Vui lòng thử lại với từ khóa khác hoặc bộ lọc khác.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

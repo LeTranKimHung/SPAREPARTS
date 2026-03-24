@@ -1,0 +1,65 @@
+@model IEnumerable<SparePartsManagement.Models.Order>
+
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng của bạn";
+}
+
+<div class="container my-5 py-5">
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="fw-bold m-0"><i class="fas fa-history text-danger me-3"></i>LỊCH SỬ ĐƠN HÀNG</h2>
+            <p class="text-muted small mt-2">Theo dõi trạng thái và chi tiết các đơn hàng bạn đã đặt</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr class="fw-bold small text-muted text-uppercase">
+                                <th class="ps-4 py-3">Mã đơn #</th>
+                                <th class="py-3">Ngày đặt</th>
+                                <th class="py-3">Tổng tiền</th>
+                                <th class="py-3">Trạng thái</th>
+                                <th class="pe-4 py-3 text-end">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-4 fw-bold text-primary">#@order.OrderId</td>
+                                    <td class="py-4 text-muted">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="py-4 fw-bold text-danger">@order.TotalAmount.ToString("N0") đ</td>
+                                    <td class="py-4">
+                                        @if (order.Status == 0) { <span class="badge bg-warning text-dark px-3 rounded-pill fw-bold">Chờ xác nhận</span> }
+                                        else if (order.Status == 1) { <span class="badge bg-info text-white px-3 rounded-pill fw-bold">Đang giao hàng</span> }
+                                        else if (order.Status == 2) { <span class="badge bg-success text-white px-3 rounded-pill fw-bold">Đã nhận hàng</span> }
+                                        else { <span class="badge bg-secondary text-white px-3 rounded-pill fw-bold">Đã hủy</span> }
+                                    </td>
+                                    <td class="pe-4 py-4 text-end">
+                                        <a href="/Cart/TrackOrder/@order.OrderId" class="btn btn-outline-dark btn-sm rounded-pill px-4 fw-bold">Chi tiết</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-box-open fa-5x text-muted opacity-25"></i>
+            </div>
+            <h4 class="fw-bold text-muted">Bạn chưa có đơn hàng nào</h4>
+            <p class="text-muted small mb-4">Hãy bắt đầu mua sắm ngay hôm nay!</p>
+            <a href="/PublicProduct" class="btn btn-danger rounded-pill px-5 fw-bold shadow-lg py-3">MUA SẮM NGAY <i class="fas fa-shopping-bag ms-2"></i></a>
+        </div>
+    }
+</div>

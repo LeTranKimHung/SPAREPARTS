@@ -1,0 +1,147 @@
+@{
+    ViewData["Title"] = "Quản lý Danh mục & Thương hiệu";
+    var categories = ViewBag.Categories as IEnumerable<SparePartsManagement.Models.Category>;
+    var brands = ViewBag.Brands as IEnumerable<SparePartsManagement.Models.Brand>;
+}
+
+<div class="mb-4">
+    <a href="/Admin/Products/Index" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold"><i class="fas fa-arrow-left me-1"></i> Trở về Quản lý Sản phẩm</a>
+</div>
+
+<div class="row g-4">
+    <!-- Categories Column -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0"><i class="fas fa-list text-primary me-2"></i> DANH MỤC</h5>
+                <button class="btn btn-primary btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="fas fa-plus"></i> Thêm mới</button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Trạm gốc</th>
+                            <th class="pe-4 text-end">Xoá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(categories != null && categories.Any()) {
+                            foreach(var cat in categories) {
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="fw-bold">@cat.Name</div>
+                                        <div class="small text-muted">@cat.Description</div>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <form asp-action="DeleteCategory" method="post" onsubmit="return confirm('Bạn có chắc xoá danh mục này?');">
+                                            <input type="hidden" name="id" value="@cat.CategoryId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-circle shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"><i class="fas fa-times"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        } else {
+                            <tr><td colspan="2" class="text-center py-4 text-muted">Chưa có danh mục nào.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brands Column -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold m-0"><i class="fas fa-copyright text-success me-2"></i> NHÃN HIỆU</h5>
+                <button class="btn btn-success btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#brandModal"><i class="fas fa-plus"></i> Thêm mới</button>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Tên hãng</th>
+                            <th class="pe-4 text-end">Xoá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if(brands != null && brands.Any()) {
+                            foreach(var brand in brands) {
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <span class="badge bg-dark bg-opacity-10 text-dark fw-bold mb-1 px-3 py-2 rounded-pill">@brand.Name</span>
+                                        <div class="small text-muted mt-1">@brand.Description</div>
+                                    </td>
+                                    <td class="pe-4 text-end">
+                                        <form asp-action="DeleteBrand" method="post" onsubmit="return confirm('Bạn có chắc xoá nhãn hiệu này?');">
+                                            <input type="hidden" name="id" value="@brand.BrandId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-circle shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        } else {
+                            <tr><td colspan="2" class="text-center py-4 text-muted">Chưa có nhãn hiệu nào.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Category -->
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <form asp-action="CreateCategory" method="post">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Thêm Danh mục Mới</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Tên Danh mục *</label>
+                        <input type="text" name="categoryName" class="form-control" required placeholder="Vd: Lốp xe..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Mô tả thêm</label>
+                        <input type="text" name="categoryDesc" class="form-control" placeholder="Thông số kỹ thuật/chi tiết" />
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Brand -->
+<div class="modal fade" id="brandModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <form asp-action="CreateBrand" method="post">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Thêm Nhãn hiệu Mới</h5>
+                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Tên Thương hiệu *</label>
+                        <input type="text" name="brandName" class="form-control" required placeholder="Vd: Michelin..." />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-muted">Mô tả/Chất lượng</label>
+                        <input type="text" name="brandDesc" class="form-control" placeholder="Mô tả thông tin hãng" />
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top-0 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold shadow-sm">Thêm mới</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

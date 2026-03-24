@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Dashboard Tổng Quan";
+    var ordersByStatus = ViewBag.OrdersByStatus as Dictionary<int, int>;
+    int countWait = ordersByStatus != null && ordersByStatus.ContainsKey(0) ? ordersByStatus[0] : 0;
+    int countDeli = ordersByStatus != null && ordersByStatus.ContainsKey(1) ? ordersByStatus[1] : 0;
+    int countDone = ordersByStatus != null && ordersByStatus.ContainsKey(2) ? ordersByStatus[2] : 0;
+    int countCancel = ordersByStatus != null && ordersByStatus.ContainsKey(3) ? ordersByStatus[3] : 0;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Doanh Thu Tháng Này</p>
+                                <h5 class="font-weight-bolder">@ViewBag.ThisMonthRevenue?.ToString("N0") VNĐ</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Tổng Đơn Hàng</p>
+                                <h5 class="font-weight-bolder">@ViewBag.TotalOrders</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Tổng Người Dùng</p>
+                                <h5 class="font-weight-bolder">@ViewBag.TotalUsers</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6 mb-4">
+            <div class="card">
+                <div class="card-body p-3">
+                    <div class="row">
+                        <div class="col-8">
+                            <div class="numbers">
+                                <p class="text-sm mb-0 text-uppercase font-weight-bold">Tổng Sản Phẩm</p>
+                                <h5 class="font-weight-bolder">@ViewBag.TotalProducts</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-lg-7 mb-lg-0 mb-4">
+            <div class="card z-index-2 h-100">
+                <div class="card-header pb-0 pt-3 bg-transparent">
+                    <h6 class="text-capitalize">Biểu Đồ Doanh Thu 7 Ngày Gần Nhất</h6>
+                </div>
+                <div class="card-body p-3">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Doanh Thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if(ViewBag.Revenue7Days != null) {
+                                foreach(var item in ViewBag.Revenue7Days)
+                                {
+                                    <tr>
+                                        <td>@item.Date.ToString("dd/MM/yyyy")</td>
+                                        <td>@item.Revenue.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card card-carousel overflow-hidden h-100 p-0">
+                <div class="card-header pb-0 pt-3 bg-transparent">
+                    <h6 class="text-capitalize">Đơn Hàng Theo Trạng Thái</h6>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">Chờ xác nhận <span class="badge bg-warning rounded-pill">@countWait</span></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">Đang giao <span class="badge bg-info rounded-pill">@countDeli</span></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">Đã hoàn thành <span class="badge bg-success rounded-pill">@countDone</span></li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">Đã hủy <span class="badge bg-danger rounded-pill">@countCancel</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header pb-0 p-3">
+                    <h6 class="mb-0">Top 5 Sản Phẩm Bán Chạy</h6>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group">
+                        @if(ViewBag.TopSelling != null) {
+                            foreach(var ts in ViewBag.TopSelling) {
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex flex-column">
+                                            <h6 class="mb-1 text-dark text-sm">@ts.ProductName</h6>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center text-dark text-sm font-weight-bold">
+                                        @ts.TotalSold đã bán
+                                    </div>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header pb-0 p-3">
+                    <h6 class="mb-0 text-danger">Cảnh Báo Sản Phẩm Sắp Hết Hàng (< 5)</h6>
+                </div>
+                <div class="card-body p-3">
+                    <ul class="list-group">
+                        @if(ViewBag.LowStock != null) {
+                            foreach(var ls in ViewBag.LowStock) {
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-2">
+                                    <div class="d-flex flex-column">
+                                        <h6 class="mb-1 text-dark text-sm">@ls.Name</h6>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">Còn @ls.StockQuantity</span>
+                                </li>
+                            }
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

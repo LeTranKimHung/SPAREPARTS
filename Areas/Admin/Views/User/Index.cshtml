@@ -1,0 +1,71 @@
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+@{
+    ViewData["Title"] = "Quản lý Tài khoản (Thành viên)";
+}
+
+<div class="card border-0 shadow-sm rounded-4 h-100">
+    <div class="card-header bg-white border-bottom p-4 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold m-0"><i class="fas fa-users text-primary me-2"></i> DANH SÁCH NGƯỜI DÙNG</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-hover">
+                <thead class="bg-light">
+                    <tr class="text-muted small text-uppercase fw-bold">
+                        <th class="ps-4 py-3">ID Hệ thống</th>
+                        <th>Email / Tài khoản</th>
+                        <th>Bảo mật 2FA</th>
+                        <th>Trạng thái (Khóa)</th>
+                        <th class="pe-4 py-3 text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any()) {
+                        foreach (var usr in Model) {
+                            var isLocked = usr.LockoutEnd != null && usr.LockoutEnd > DateTimeOffset.UtcNow;
+                            <tr>
+                                <td class="ps-4 py-3 text-muted small" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                                    @usr.Id
+                                </td>
+                                <td>
+                                    <h6 class="fw-bold mb-1">@usr.UserName</h6>
+                                    <div class="small text-muted"><i class="fas fa-envelope me-1"></i> @usr.Email @(usr.EmailConfirmed ? "(Đã BH)" : "")</div>
+                                </td>
+                                <td>
+                                    @if(usr.TwoFactorEnabled) {
+                                        <span class="badge bg-success shadow-sm rounded-pill"><i class="fas fa-shield-alt"></i> Bật</span>
+                                    } else {
+                                        <span class="badge bg-light text-muted border shadow-sm rounded-pill"><i class="fas fa-unlock"></i> Tắt</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (usr.Email != User.Identity.Name) {
+                                        <form asp-action="ToggleLockStatus" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@usr.Id" />
+                                            <button type="submit" class="btn btn-sm rounded-pill fw-bold @(isLocked ? "btn-danger" : "btn-outline-success")"
+                                                    onclick="return confirm('@(isLocked ? "Mở khóa tài khoản này?" : "Cấm mượn tài khoản này (Khóa)?")');">
+                                                <i class="fas @(isLocked ? "fa-lock" : "fa-unlock") me-1"></i> @(isLocked ? "Bị cấm" : "Hoạt động")
+                                            </button>
+                                        </form>
+                                    } else {
+                                        <span class="badge bg-primary text-white px-3 py-2 rounded-pill"><i class="fas fa-crown me-1"></i> Bạn</span>
+                                    }
+                                </td>
+                                <td class="pe-4 text-end">
+                                    @if (usr.Email != User.Identity.Name) {
+                                        <form asp-action="Delete" method="post" onsubmit="return confirm('Cảnh báo: Xoá vĩnh viễn user có thể làm văng DB (Cascade). Chắc chắn chưa?');">
+                                            <input type="hidden" name="id" value="@usr.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger btn-circle shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    } else {
+                        <tr><td colspan="5" class="text-center py-5 text-muted">Không tìm thấy Account nào.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

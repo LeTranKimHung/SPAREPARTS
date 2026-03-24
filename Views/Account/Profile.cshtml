@@ -1,0 +1,70 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Hồ sơ của bạn";
+    var user = await UserManager.GetUserAsync(User);
+}
+
+<div class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg rounded-5 overflow-hidden">
+                <div class="card-header bg-dark text-white p-5 text-center border-0 position-relative">
+                    <div class="position-relative z-index-2">
+                        <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-lg" style="width: 100px; height: 100px; font-size: 3rem; font-weight: 800;">
+                            @user?.Email?[0].ToString().ToUpper()
+                        </div>
+                        <h3 class="fw-bold m-0 tracking-tight">XIN CHÀO, @user?.Email?.Split('@')[0].ToUpper()</h3>
+                        <p class="small m-0 text-white-50 mt-1">Thành viên từ @DateTime.Now.ToString("MMMM yyyy")</p>
+                    </div>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row g-4 pt-4">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">ĐỊA CHỈ EMAIL</label>
+                            <div class="p-3 bg-light rounded-3 fw-bold text-dark border-0">
+                                <i class="fas fa-envelope me-2 text-danger"></i> @user?.Email
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">QUYỀN HẠN</label>
+                            <div class="p-3 bg-light rounded-3 fw-bold text-dark border-0">
+                                <i class="fas fa-user-shield me-2 text-primary"></i> 
+                                @if (User.IsInRole("Admin")) { <span class="badge bg-primary px-3 rounded-pill fw-bold">ADMINISTRATOR</span> }
+                                else { <span class="badge bg-secondary px-3 rounded-pill fw-bold">CUSTOMER</span> }
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">TRẠNG THÁI TÀI KHOẢN</label>
+                            <div class="p-3 bg-light rounded-3 fw-bold text-dark border-0">
+                                <i class="fas fa-check-circle me-2 text-success"></i> Đã kích hoạt
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">LINK TÁC VỤ NHANH</label>
+                            <div class="d-flex gap-2">
+                                <a href="/Cart/TrackOrder" class="btn btn-outline-dark rounded-pill fw-bold small px-4 flex-grow-1 py-1">ĐƠN HÀNG</a>
+                                <a href="#" class="btn btn-outline-danger rounded-pill fw-bold small px-4 flex-grow-1 py-1">ĐỔI MẬT KHẨU</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-top pt-5 mt-4 text-center">
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="btn btn-dark rounded-pill px-5 fw-bold shadow-lg py-3">
+                                ĐĂNG XUẤT KHỎI HỆ THỐNG <i class="fas fa-sign-out-alt ms-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-danger mt-4 rounded-4 border-0 shadow-sm p-4 text-center">
+                <h6 class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>Khu vực bảo mật</h6>
+                <p class="small text-muted mb-0">Vui lòng không chia sẻ mật khẩu của bạn cho bất kỳ ai khác.</p>
+            </div>
+        </div>
+    </div>
+</div>

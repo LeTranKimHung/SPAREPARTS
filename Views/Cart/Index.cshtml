@@ -1,0 +1,181 @@
+@using SparePartsManagement.Helpers;
+@model IEnumerable<SparePartsManagement.ViewModels.CartItem>
+
+@{
+    ViewData["Title"] = "Giỏ hàng của bạn";
+}
+
+<div class="container my-5 py-5">
+    <div class="row mb-5">
+        <div class="col text-center">
+            <h2 class="fw-bold m-0"><i class="fas fa-shopping-cart text-danger me-3"></i>GIỎ HÀNG CỦA BẠN</h2>
+            <p class="text-muted small mt-2">Dưới đây là danh sách các phụ tùng bạn đã chọn</p>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light">
+                            <tr class="fw-bold small text-muted text-uppercase">
+                                <th class="ps-4 py-3">Sản phẩm</th>
+                                <th class="py-3">Đơn giá</th>
+                                <th class="py-3 text-center">Số lượng</th>
+                                <th class="py-3">Tổng cộng</th>
+                                <th class="pe-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4 py-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-white p-2 rounded-3 me-3 border border-light" style="width: 60px; height: 60px;">
+                                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "https://images.unsplash.com/photo-1541443131876-44b035dd1c51?q=80" : item.ImageUrl)" class="img-fluid rounded-2" alt="">
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-bold m-0 small">@item.ProductName</h6>
+                                                <span class="text-muted small">ID:#@item.ProductId</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 fw-bold">@item.Price.ToString("N0") đ</td>
+                                    <td class="py-4 text-center">
+                                        <form asp-action="Update" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.ProductId" />
+                                            <div class="input-group input-group-sm border rounded-pill overflow-hidden mx-auto" style="width: 100px;">
+                                                <input type="number" name="quantity" class="form-control text-center border-0 fw-bold" value="@item.Quantity" onchange="this.form.submit()">
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td class="py-4 fw-bold text-danger">@item.Total.ToString("N0") đ</td>
+                                    <td class="pe-4 py-4 text-end">
+                                        <form asp-action="Remove" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.ProductId" />
+                                            <button type="submit" class="btn btn-link link-danger p-0"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    <a href="/PublicProduct" class="btn btn-link text-dark text-decoration-none fw-bold small">
+                        <i class="fas fa-arrow-left me-2"></i> TIẾP TỤC CHỌN THÊM SẢN PHẨM
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 p-4">
+                    <h5 class="fw-bold mb-4">TỔNG ĐƠN HÀNG</h5>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Số món:</span>
+                        <span class="fw-bold small">@Model.Count() món</span>
+                    </div>
+                    <div class="mb-4">
+                        <label class="fw-bold small text-muted mb-2">MÃ GIẢM GIÁ (COUPON):</label>
+                        <form asp-action="ApplyCoupon" method="post" class="d-flex gap-1 mb-2">
+                             <input name="couponCode" class="form-control border-0 bg-light rounded-pill px-3 shadow-none small" placeholder="GIAM10" />
+                             <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold">ÁP DỤNG</button>
+                        </form>
+                        @if (TempData["CouponError"] != null) { <span class="text-danger small ms-2">@TempData["CouponError"]</span> }
+                        @if (TempData["CouponSuccess"] != null) { <span class="text-success small ms-2">@TempData["CouponSuccess"]</span> }
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-3 text-muted small">
+                         <span>Tạm tính (@Model.Sum(i => i.Quantity) món):</span>
+                         <span class="fw-bold">@Model.Sum(i => i.Total).ToString("N0") đ</span>
+                    </div>
+
+                    @{
+                        var discount = (decimal)(Context.Session.GetSession<double?>("DiscountPercentage") ?? 0);
+                        var total = Model.Sum(i => i.Total);
+                        var discountAmount = total * (discount / 100);
+                        var finalTotal = total - discountAmount;
+                    }
+
+                    @if (discount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-3 text-success small">
+                            <span>Giảm giá (@discount%):</span>
+                            <span class="fw-bold">- @discountAmount.ToString("N0") đ</span>
+                        </div>
+                    }
+
+                    <!-- Shipping Estimator -->
+                    <div class="mb-3 pt-3 border-top">
+                        <label class="fw-bold small text-muted mb-2">ƯỚC TÍNH PHÍ GIAO HÀNG (Nhập Tỉnh/TP):</label>
+                        <input type="text" id="cartShippingRegion" class="form-control border-0 bg-light rounded-pill px-3 shadow-none small mb-2" placeholder="Ví dụ: Hồ Chí Minh, Hà Nội..." autocomplete="off">
+                        <div class="d-flex justify-content-between text-info small">
+                            <span>Phí giao hàng:</span>
+                            <span class="fw-bold" id="cartShippingFeeVal">+ 0 đ</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-4 pb-4 border-bottom">
+                        <span class="text-muted fw-bold mt-2">THÀNH TIỀN:</span>
+                        <h4 class="fw-bold text-danger m-0" id="cartTotalVal" data-value="@finalTotal">@finalTotal.ToString("N0") đ</h4>
+                    </div>
+
+                    <a href="/Cart/Checkout" class="btn btn-danger w-100 rounded-pill py-3 fw-bold shadow-lg mb-3">
+                        TIẾN HÀNH THANH TOÁN <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                    
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const shippingInput = document.getElementById("cartShippingRegion");
+                            const feeLabel = document.getElementById("cartShippingFeeVal");
+                            const totalLabel = document.getElementById("cartTotalVal");
+                            
+                            const baseTotal = parseFloat(totalLabel.getAttribute("data-value"));
+                            
+                            shippingInput.addEventListener("input", function() {
+                                let val = this.value.toLowerCase().trim();
+                                let fee = 0;
+                                
+                                if (val === "") {
+                                    fee = 0; // Chưa nhập gì nên để 0
+                                }
+                                else if (val.includes("hcm") || val.includes("hồ chí minh") || val.includes("ho chi minh") || val.includes("bình dương") || val.includes("binh duong") || val.includes("đồng nai") || val.includes("dong nai")) {
+                                    fee = 0;
+                                } 
+                                else if (val.includes("long an") || val.includes("tiền giang") || val.includes("tien giang") || val.includes("tây ninh") || val.includes("tay ninh") || val.includes("vũng tàu") || val.includes("vung tau") || val.includes("bà rịa") || val.includes("ba ria")) {
+                                    fee = 10000;
+                                }
+                                else if (val.includes("cần thơ") || val.includes("can tho") || val.includes("bến tre") || val.includes("ben tre") || val.includes("vĩnh long") || val.includes("vinh long") || val.includes("bình thuận") || val.includes("binh thuan") || val.includes("bình phước") || val.includes("binh phuoc") || val.includes("đồng tháp") || val.includes("dong thap")) {
+                                    fee = 15000;
+                                } 
+                                else {
+                                    fee = 20000;
+                                }
+
+                                feeLabel.innerText = (fee > 0 ? "+ " : "") + new Intl.NumberFormat('vi-VN').format(fee) + " đ";
+                                const finalAmount = baseTotal + fee;
+                                totalLabel.innerText = new Intl.NumberFormat('vi-VN').format(finalAmount) + " đ";
+                            });
+                        });
+                    </script>
+                    
+                    <p class="text-center text-muted small m-0"><i class="fas fa-shield-alt me-1"></i>Thanh toán an toàn 100%</p>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="fas fa-shopping-basket fa-5x text-muted opacity-25"></i>
+            </div>
+            <h4 class="fw-bold text-muted">Giỏ hàng của bạn đang trống</h4>
+            <p class="text-muted small mb-4">Hãy thêm các phụ tùng cần thiết ngay bây giờ!</p>
+            <a href="/PublicProduct" class="btn btn-danger rounded-pill px-5 fw-bold shadow-lg py-3">MUA SẮM NGAY <i class="fas fa-shopping-bag ms-2"></i></a>
+        </div>
+    }
+</div>

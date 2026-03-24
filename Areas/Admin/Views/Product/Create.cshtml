@@ -1,0 +1,191 @@
+@model SparePartsManagement.Models.Product
+@{
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+    var categories = ViewBag.Categories as IEnumerable<SparePartsManagement.Models.Category>;
+    var brands = ViewBag.Brands as IEnumerable<SparePartsManagement.Models.Brand>;
+}
+
+<div class="mb-4">
+    <a href="/Admin/Products/Index" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold"><i class="fas fa-arrow-left me-1"></i> Quay lại danh sách</a>
+</div>
+
+<h3 class="fw-bold mb-4 text-dark"><i class="fas fa-plus-circle text-danger me-2"></i> @ViewData["Title"]</h3>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4 p-md-5">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-muted">Tên phụ tùng *</label>
+                    <input asp-for="Name" class="form-control" required placeholder="Nhập tên phụ tùng..." />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Danh mục *</label>
+                    <select asp-for="CategoryId" class="form-select" required>
+                        <option value="">-- Chọn danh mục --</option>
+                        @if(categories != null)
+                        {
+                            foreach (var cat in categories)
+                            {
+                                <option value="@cat.CategoryId">@cat.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-muted">Hãng xe *</label>
+                    <select asp-for="BrandId" class="form-select" required>
+                        <option value="">-- Chọn hãng xe --</option>
+                        @if(brands != null)
+                        {
+                            foreach (var brand in brands)
+                            {
+                                <option value="@brand.BrandId">@brand.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">Dòng xe tương thích</label>
+                    <input asp-for="CarModel" class="form-control" placeholder="Vd: Corolla Altis 2023" />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">Giá tiền (VND) *</label>
+                    <div class="input-group">
+                        <input asp-for="Price" type="number" min="0" step="1000" class="form-control" required />
+                        <span class="input-group-text bg-light fw-bold">đ</span>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-bold small text-muted">Số lượng Tồn kho *</label>
+                    <input asp-for="StockQuantity" type="number" min="0" class="form-control" value="10" required />
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold small text-muted">Hình ảnh phụ tùng (Kéo thả hoặc Chọn tệp) *</label>
+                    <div id="drop-zone" class="border-2 border-dashed rounded-4 p-5 text-center bg-light position-relative overflow-hidden" style="cursor: pointer; transition: all 0.3s; border-color: #dee2e6 !important;">
+                        <div id="preview-container" class="d-none">
+                            <img id="image-preview" src="#" class="img-fluid rounded-3 mb-3 shadow-sm" style="max-height: 250px;" />
+                            <div class="small fw-bold text-success"><i class="fas fa-check-circle me-1"></i> Sẵn sàng tải lên!</div>
+                            <button type="button" class="btn btn-sm btn-outline-danger rounded-pill mt-2" onclick="resetFile()"><i class="fas fa-times me-1"></i> Hủy chọn</button>
+                        </div>
+                        <div id="upload-prompt">
+                            <i class="fas fa-cloud-upload-alt fa-3x text-danger opacity-50 mb-3"></i>
+                            <p class="mb-1 fw-bold">Kéo và thả tệp ảnh vào đây</p>
+                            <p class="text-muted small">Hoặc click để chọn một tệp hình ảnh từ máy tính</p>
+                            <div class="mt-3">
+                                <span class="badge bg-danger rounded-pill px-3">Hỗ trợ: JPG, PNG, WEBP</span>
+                            </div>
+                        </div>
+                        <input type="file" name="imageFile" id="imageFile" class="position-absolute top-0 start-0 w-100 h-100 opacity-0" style="cursor: pointer;" accept="image/*" />
+                        <input type="hidden" asp-for="ImageUrl" id="ImageUrlHidden" />
+                    </div>
+                    <div class="mt-2">
+                         <label class="form-label fw-bold small text-muted mt-2">Hoặc nhập URL hình ảnh trực tiếp (nếu có):</label>
+                         <input asp-for="ImageUrl" id="ImageUrlInput" class="form-control" placeholder="https://..." oninput="updatePreviewFromUrl(this.value)" />
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <label class="form-label fw-bold small text-muted">Mô tả sản phẩm</label>
+                    <textarea asp-for="Description" class="form-control" rows="5" placeholder="Nhập chi tiết mô tả về công dụng linh kiện..."></textarea>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="form-check form-switch mt-2">
+                        <input class="form-check-input" type="checkbox" role="switch" id="IsHot" name="IsHot" value="true">
+                        <label class="form-check-label fw-bold ms-2" for="IsHot">Đánh dấu sản phẩm HOT / MỚI</label>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-5" />
+            
+            <div class="text-end">
+                <button type="submit" class="btn btn-danger px-5 py-2 rounded-pill fw-bold shadow-lg"><i class="fas fa-save me-2"></i> LƯU SẢN PHẨM</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const fileInput = document.getElementById('imageFile');
+        const dropZone = document.getElementById('drop-zone');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const previewContainer = document.getElementById('preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const imageUrlInput = document.getElementById('ImageUrlInput');
+        const imageUrlHidden = document.getElementById('ImageUrlHidden');
+
+        fileInput.addEventListener('change', function(e) {
+            handleFiles(this.files);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#dc3545";
+            dropZone.classList.add('bg-white');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = "#dee2e6";
+            dropZone.classList.remove('bg-white');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = "#dee2e6";
+            dropZone.classList.remove('bg-white');
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+            handleFiles(files);
+        });
+
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        previewContainer.classList.remove('d-none');
+                        uploadPrompt.classList.add('d-none');
+                        imageUrlInput.value = ""; // Clear URL if file is chosen
+                        imageUrlHidden.value = "";
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        function resetFile() {
+            fileInput.value = "";
+            previewContainer.classList.add('d-none');
+            uploadPrompt.classList.remove('d-none');
+        }
+
+        function updatePreviewFromUrl(url) {
+            if (url && url.length > 5) {
+                imagePreview.src = url;
+                previewContainer.classList.remove('d-none');
+                uploadPrompt.classList.add('d-none');
+                fileInput.value = ""; // Clear file if URL is entered
+            } else if (!fileInput.files.length) {
+                resetFile();
+            }
+        }
+    </script>
+    <style>
+        .border-dashed { border-style: dashed !important; }
+        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    </style>
+}

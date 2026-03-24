@@ -1,0 +1,111 @@
+@model IEnumerable<SparePartsManagement.Models.Review>
+
+@{
+    ViewData["Title"] = "Quản lý Đánh giá (Reviews)";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0 text-dark">Quản lý Đánh giá</h2>
+        <p class="text-muted">Xem và quản lý các đánh giá sản phẩm từ khách hàng</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="m-0 fw-bold"><i class="fas fa-star text-warning me-2"></i> Danh sách Đánh giá</h5>
+    </div>
+    
+    <div class="card-body p-0">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-3">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">#</th>
+                        <th>Sản phẩm</th>
+                        <th>Khách hàng</th>
+                        <th>Số sao</th>
+                        <th>Nội dung bình luận</th>
+                        <th>Thời gian</th>
+                        <th class="text-end pe-4">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        int index = 1;
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">@index</td>
+                                <td>
+                                    <div class="fw-bold text-dark text-truncate" style="max-width: 200px;" title="@item.Product?.Name">
+                                        @(item.Product?.Name ?? "Sản phẩm không tồn tại")
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary bg-opacity-10 text-dark border-0">
+                                        <i class="fas fa-user-circle me-1 text-muted"></i> @item.UserEmail
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex text-warning small align-items-center">
+                                        @for(int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= item.StarRating)
+                                            {
+                                                <i class="fas fa-star text-warning"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-star text-muted opacity-25"></i>
+                                            }
+                                        }
+                                        <span class="ms-2 fw-bold text-dark">@item.StarRating/5</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fst-italic text-muted" style="max-width: 300px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis;" title="@item.Comment">
+                                        "@item.Comment"
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <i class="far fa-clock text-muted me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form asp-action="Delete" asp-route-id="@item.ReviewId" method="post" class="d-inline" onsubmit="return confirm('Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa đánh giá này khỏi danh sách?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill fw-bold" title="Xóa đánh giá này">
+                                            <i class="fas fa-trash-alt me-1"></i> Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="text-muted opacity-50 mb-3">
+                                    <i class="fas fa-comments fa-3x"></i>
+                                </div>
+                                <h5 class="fw-bold text-muted">Chưa có đánh giá nào từ khách hàng!</h5>
+                                <p class="small text-muted mb-0">Các đánh giá mới sẽ tự động hiển thị tại đây.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

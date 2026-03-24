@@ -1,0 +1,268 @@
+@model SparePartsManagement.Models.Product
+@using Microsoft.AspNetCore.Http
+@using SparePartsManagement.Helpers
+@using SparePartsManagement.ViewModels
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = Model.Name + " - Chi tiết sản phẩm";
+    var session = HttpContextAccessor.HttpContext?.Session;
+    List<CartItem>? wishlist = null;
+    if (session != null)
+    {
+        wishlist = session.GetSession<List<CartItem>>("WishlistItems");
+    }
+}
+
+<div class="container my-5 py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-danger text-decoration-none small fw-bold">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/PublicProduct" class="text-danger text-decoration-none small fw-bold">Sản phẩm</a></li>
+            <li class="breadcrumb-item active small text-muted" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Product Image -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                <div class="p-3 bg-light">
+                    <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://images.unsplash.com/photo-1541443131876-44b035dd1c51?q=80" : Model.ImageUrl)" class="img-fluid rounded-3" alt="@Model.Name">
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Information -->
+        <div class="col-lg-6">
+            <h1 class="fw-bold mb-2">@Model.Name</h1>
+            <div class="d-flex align-items-center mb-4 text-warning">
+                @{
+                    var reviewCount = Model.Reviews?.Count() ?? 0;
+                    var averageRating = reviewCount > 0 ? Model.Reviews!.Average(r => r.StarRating) : 0;
+                    var fullStars = (int)Math.Floor(averageRating);
+                    var hasHalfStar = averageRating - fullStars >= 0.5;
+                    var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+                }
+                
+                @for (int i = 0; i < fullStars; i++)
+                {
+                    <i class="fas fa-star"></i>
+                }
+                @if (hasHalfStar)
+                {
+                    <i class="fas fa-star-half-alt"></i>
+                }
+                @for (int i = 0; i < emptyStars; i++)
+                {
+                    <i class="far fa-star"></i>
+                }
+                
+                <span class="text-muted small ms-3 fw-bold border-start ps-3">@(reviewCount) đánh giá</span>
+                <span class="text-success small ms-3 fw-bold border-start ps-3"><i class="fas fa-check-circle me-1"></i>Còn hàng: @Model.StockQuantity</span>
+            </div>
+
+            <div class="bg-light p-4 rounded-4 mb-4">
+                <h2 class="text-danger fw-bold m-0">@Model.Price.ToString("N0") <span class="fs-5">đ</span></h2>
+                <p class="text-muted small m-0 mt-1"><i class="fas fa-shipping-fast me-2 text-primary"></i>Miễn phí vận chuyển nội thành Hà Nội</p>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-muted">@Model.Description</p>
+            </div>
+
+            <div class="mb-4 pb-4 border-bottom">
+                <div class="row g-2">
+                    <div class="col-md-5">
+                        <label class="fw-bold small text-muted mb-2">SỐ LƯỢNG MUA:</label>
+                        <div class="input-group border rounded-pill overflow-hidden bg-white shadow-sm" style="width: 150px;">
+                            <button class="btn btn-link text-dark px-3 text-decoration-none fw-bold" type="button" onclick="changeQty(-1)">-</button>
+                            <input type="number" id="qtyInput" class="form-control text-center border-0 fw-bold bg-transparent" value="1" min="1" max="@Model.StockQuantity">
+                            <button class="btn btn-link text-dark px-3 text-decoration-none fw-bold" type="button" onclick="changeQty(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3">
+                <form asp-controller="Cart" asp-action="Add" method="post" class="flex-grow-1">
+                    <input type="hidden" name="id" value="@Model.ProductId" />
+                    <input type="hidden" name="quantity" id="hiddenQty" value="1" />
+                    <button type="submit" class="btn btn-danger w-100 py-3 rounded-pill fw-bold shadow-lg">
+                        <i class="fas fa-cart-plus me-2"></i>THÊM VÀO GIỎ HÀNG
+                    </button>
+                </form>
+                <form asp-controller="Wishlist" asp-action="Toggle" asp-route-id="@Model.ProductId" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-lg border-2 rounded-circle shadow-sm" style="width: 60px; height: 60px;">
+                        @{
+                            var inWishlist = wishlist?.Any(i => i.ProductId == Model.ProductId) ?? false;
+                        }
+                        <i class="@(inWishlist ? "fas" : "far") fa-heart"></i>
+                    </button>
+                </form>
+            </div>
+
+            <script>
+                function changeQty(amount) {
+                    var input = document.getElementById('qtyInput');
+                    var hiddenInput = document.getElementById('hiddenQty');
+                    var currentVal = parseInt(input.value);
+                    var newVal = currentVal + amount;
+                    
+                    if (newVal >= 1 && newVal <= @Model.StockQuantity) {
+                        input.value = newVal;
+                        hiddenInput.value = newVal;
+                    }
+                }
+                
+                document.getElementById('qtyInput').addEventListener('change', function() {
+                    var val = parseInt(this.value);
+                    if (val < 1) this.value = 1;
+                    if (val > @Model.StockQuantity) this.value = @Model.StockQuantity;
+                    document.getElementById('hiddenQty').value = this.value;
+                });
+            </script>
+            
+            <div class="mt-5 bg-info bg-opacity-10 p-4 rounded-4 border-0">
+               <h6 class="fw-bold mb-1"><i class="fas fa-shield-alt me-2 text-info"></i>Bảo hành chính hãng 12 tháng</h6>
+               <p class="small text-muted mb-0 m-0">Cam kết đổi trả trong 7 ngày nếu có lỗi từ nhà sản xuất.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Section -->
+    <div class="row mt-5 pt-5">
+        <div class="col-lg-8">
+            <h4 class="fw-bold mb-4 border-bottom pb-3"><span class="text-danger">|</span> ĐÁNH GIÁ TỪ KHÁCH HÀNG</h4>
+            
+            @if (Model.Reviews != null && Model.Reviews.Any())
+            {
+                @foreach (var review in Model.Reviews)
+                {
+                    <div class="card border-0 bg-light rounded-4 mb-3 p-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="fw-bold fs-5">@review.UserEmail</div>
+                            <div class="text-warning small">
+                                @for (int i = 0; i < review.StarRating; i++) { <i class="fas fa-star"></i> }
+                                @for (int i = 0; i < 5 - review.StarRating; i++) { <i class="far fa-star"></i> }
+                            </div>
+                        </div>
+                        <p class="text-muted m-0">@review.Comment</p>
+                        <span class="text-muted small mt-2 d-block">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="alert alert-secondary border-0 rounded-4 text-center py-4">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!</div>
+            }
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="card border-0 shadow-sm rounded-4 p-5 mt-5 bg-dark text-white">
+                    <h5 class="fw-bold mb-4">GỬI ĐÁNH GIÁ CỦA BẠN</h5>
+                    <form id="reviewForm">
+                        <input type="hidden" name="ProductId" value="@Model.ProductId" />
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted d-block mb-3">SỐ SAO</label>
+                            <div class="rating-stars mb-2" style="cursor: pointer; font-size: 1.5rem; color: #ffc107;">
+                                <i class="fas fa-star star-icon" data-value="1"></i>
+                                <i class="fas fa-star star-icon" data-value="2"></i>
+                                <i class="fas fa-star star-icon" data-value="3"></i>
+                                <i class="fas fa-star star-icon" data-value="4"></i>
+                                <i class="fas fa-star star-icon" data-value="5"></i>
+                            </div>
+                            <!-- Trường ẩn để lưu giá trị số sao sẽ được gửi lên server -->
+                            <input type="hidden" name="StarRating" id="StarRatingInput" value="5">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted">BÌNH LUẬN</label>
+                            <textarea name="Comment" class="form-control border-0 bg-secondary bg-opacity-25 text-white py-3 px-4 rounded-4 shadow-none" rows="3" placeholder="Nhập cảm nhận của bạn..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold shadow-lg" id="submitReviewBtn">GỬI ĐÁNH GIÁ <i class="fas fa-paper-plane ms-2"></i></button>
+                    </form>
+                </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const stars = document.querySelectorAll('.star-icon');
+                        const ratingInput = document.getElementById('StarRatingInput');
+
+                        stars.forEach(star => {
+                            // Xử lý khi hover
+                            star.addEventListener('mouseover', function() {
+                                const value = this.getAttribute('data-value');
+                                updateStars(value);
+                            });
+
+                            // Xử lý khi click
+                            star.addEventListener('click', function() {
+                                const value = this.getAttribute('data-value');
+                                ratingInput.value = value;
+                            });
+                        });
+
+                        // Xử lý khi chuột rời khỏi khu vực rating
+                        document.querySelector('.rating-stars').addEventListener('mouseleave', function() {
+                            const currentValue = ratingInput.value;
+                            updateStars(currentValue);
+                        });
+
+                        function updateStars(value) {
+                            stars.forEach(s => {
+                                if (s.getAttribute('data-value') <= value) {
+                                    s.classList.remove('far'); // Xóa class sao rỗng (nếu có để làm hiệu ứng)
+                                    s.classList.add('fas');    // Thêm class sao đặc
+                                } else {
+                                    s.classList.remove('fas');
+                                    s.classList.add('far');
+                                }
+                            });
+                        }
+
+                        // Xử lý Gửi form bằng AJAX
+                        const reviewForm = document.getElementById('reviewForm');
+                        if (reviewForm) {
+                            reviewForm.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                
+                                const productId = parseInt(document.querySelector('input[name="ProductId"]').value, 10);
+                                const starRating = parseInt(ratingInput.value, 10);
+                                const comment = document.querySelector('textarea[name="Comment"]').value;
+
+                                fetch('/PublicProduct/PostReview', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        ProductId: productId,
+                                        StarRating: starRating,
+                                        Comment: comment
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        alert(data.message);
+                                        window.location.reload(); // Hoặc cập nhật giao diện không cần reload
+                                    } else {
+                                        alert(data.message || 'Có lỗi xảy ra!');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Đã xảy ra lỗi khi gửi đánh giá.');
+                                });
+                            });
+                        }
+                    });
+                </script>
+            }
+            else
+            {
+                <div class="alert alert-warning mt-5 rounded-4 border-0">Vui lòng <a href="/Account/Login" class="fw-bold text-dark">đăng nhập</a> để gửi đánh giá.</div>
+            }
+        </div>
+    </div>
+</div>

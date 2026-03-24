@@ -1,0 +1,111 @@
+@model SparePartsManagement.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.OrderId;
+}
+
+<div class="mb-4">
+    <a href="/Admin/Orders/Index" class="btn btn-outline-secondary rounded-pill btn-sm fw-bold"><i class="fas fa-arrow-left me-1"></i> Quay lại danh sách</a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="fw-bold m-0"><i class="fas fa-box-open text-primary me-2"></i> THÔNG TIN SẢN PHẨM</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light text-muted small text-uppercase fw-bold">
+                        <tr>
+                            <th class="ps-4 py-3">Sản phẩm</th>
+                            <th class="py-3 text-center">SL</th>
+                            <th class="py-3 text-end">Đơn giá</th>
+                            <th class="pe-4 py-3 text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.OrderItems != null)
+                        {
+                            foreach (var item in Model.OrderItems)
+                            {
+                                <tr>
+                                    <td class="ps-4 gap-3 d-flex align-items-center py-3">
+                                        <img src="@(item.Product?.ImageUrl ?? "https://via.placeholder.com/50")" width="50" height="50" class="rounded object-fit-contain" />
+                                        <div>
+                                            <div class="fw-bold">@(item.Product?.Name ?? "Sản phẩm ẩn")</div>
+                                            <div class="small text-muted">Mã SP: @item.ProductId</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center fw-bold">@item.Quantity</td>
+                                    <td class="text-end text-muted">@item.PriceAtOrder.ToString("N0") đ</td>
+                                    <td class="pe-4 text-end fw-bold text-danger">@((item.Quantity * item.PriceAtOrder).ToString("N0")) đ</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Thông tin khách hàng -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-bottom p-4">
+                <h5 class="fw-bold m-0"><i class="fas fa-user-circle text-success me-2"></i> KHÁCH HÀNG</h5>
+            </div>
+            <div class="card-body p-4">
+                <p class="mb-2"><span class="text-muted">Tên:</span> <strong class="float-end">@Model.CustomerName</strong></p>
+                <p class="mb-2"><span class="text-muted">Email:</span> <strong class="float-end">@Model.Email</strong></p>
+                <p class="mb-2"><span class="text-muted">Số ĐT:</span> <strong class="float-end">@Model.Phone</strong></p>
+                <hr />
+                <p class="mb-1 text-muted">Địa chỉ nhận hàng:</p>
+                <p class="fw-bold">@Model.ShippingAddress</p>
+            </div>
+        </div>
+        
+        <!-- Thanh toán summary -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);">
+            <h5 class="fw-bold mb-4 border-bottom border-secondary pb-3">TÓM TẮT THANH TOÁN</h5>
+            
+            @{
+                decimal parsedShippingFee = 0;
+                string addrStr = Model.ShippingAddress ?? "";
+                if (addrStr.StartsWith("[Phí Ship:")) {
+                    int sIdx = addrStr.IndexOf(":") + 1;
+                    int eIdx = addrStr.IndexOf("đ]");
+                    if (sIdx > 0 && eIdx > sIdx) {
+                        string numClean = addrStr.Substring(sIdx, eIdx - sIdx).Replace(".", "").Replace(",", "").Trim();
+                        decimal.TryParse(numClean, out parsedShippingFee);
+                    }
+                }
+                
+                decimal sumItems = Model.OrderItems?.Sum(i => i.Quantity * i.PriceAtOrder) ?? 0;
+                decimal calcDiscount = sumItems + parsedShippingFee - Model.TotalAmount;
+                if (calcDiscount < 0) calcDiscount = 0;
+            }
+
+            <div class="d-flex justify-content-between mb-2 text-white-50 small">
+                <span>Tiền hàng:</span>
+                <span>@sumItems.ToString("N0") đ</span>
+            </div>
+            
+            @if (calcDiscount > 0) {
+            <div class="d-flex justify-content-between mb-2 text-success small">
+                <span>Giảm giá:</span>
+                <span>- @calcDiscount.ToString("N0") đ</span>
+            </div>
+            }
+            
+            <div class="d-flex justify-content-between mb-3 text-info small border-bottom border-secondary pb-3">
+                <span>Phí vận chuyển:</span>
+                <span class="fw-bold">@(parsedShippingFee > 0 ? "+ " + parsedShippingFee.ToString("N0") + " đ" : "Freeship (0 đ)")</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-end">
+                <h6 class="fw-bold m-0">TỔNG THU:</h6>
+                <h3 class="fw-black text-warning m-0">@Model.TotalAmount.ToString("N0") <span class="fs-6 fw-normal">đ</span></h3>
+            </div>
+        </div>
+    </div>
+</div>

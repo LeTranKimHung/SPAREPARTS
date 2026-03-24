@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Xác nhận OTP";
+}
+
+<div class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg rounded-5 overflow-hidden">
+                <div class="card-header bg-dark text-white p-4 text-center border-0">
+                    <i class="fas fa-shield-alt fa-3x mb-3 text-danger"></i>
+                    <h3 class="fw-bold m-0 tracking-tight">XÁC MINH CỦA BẠN</h3>
+                    <p class="small text-white-50 mt-1 mb-0">Vui lòng nhập mã OTP đã được gửi đến email</p>
+                </div>
+                <div class="card-body p-5">
+                    <form asp-action="VerifyOTP" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4 rounded-3 border-0 small"></div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-2">MÃ OTP (6 CHỮ SỐ)</label>
+                            <input name="otp" class="form-control form-control-lg border-0 bg-light rounded-pill px-4 shadow-none fw-bold tracking-widest text-center" style="font-size: 2rem; border: 2px dashed #dc3545 !important;" maxlength="6" autofocus placeholder="000000" />
+                        </div>
+
+                        <button type="submit" class="btn btn-danger w-100 rounded-pill py-3 fw-bold shadow-lg mb-3">
+                            XÁC NHẬN ĐĂNG KÝ <i class="fas fa-check-circle ms-2"></i>
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="small text-muted mb-0">Chưa nhận được mã? <a href="/Account/Register" class="text-danger fw-bold text-decoration-none">Gửi lại</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-4 rounded-4 border-0 shadow-sm p-3 text-center">
+                <p class="small m-0 text-muted"><i class="fas fa-info-circle me-1"></i>Vì lý do kỹ thuật (không có SMTP server), bạn hãy xem mã OTP trong <strong>Terminal/Console</strong> của ứng dụng.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tracking-widest { letter-spacing: 0.5rem; }
+</style>

@@ -1,0 +1,114 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SparePartsManagement.Data;
+using SparePartsManagement.Models;
+using System.Linq;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+
+// 🔹 Cấu hình Session & Cache (Để làm Giỏ hàng)
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options => {
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// 🔹 Cấu hình MySQL Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// 🔹 Cấu hình Identity (Đăng nhập & Phân quyền)
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => {
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// Cấu hình đường dẫn Cookie (Trang Login mặc định)
+builder.Services.ConfigureApplicationCookie(options => {
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
+
+var app = builder.Build();
+
+// Seed Admin User & Roles (Quan trọng để test phân quyền)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try {
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        
+        // Tạo Role Admin & User
+        string[] roleNames = { "Admin", "User" };
+        foreach (var roleName in roleNames) {
+            if (!await roleManager.RoleExistsAsync(roleName)) {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+
+        // Tạo tài khoản Admin mặc định để test
+        var adminEmail = "admin@spareparts.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null) {
+            var user = new IdentityUser { UserName = adminEmail, Email = adminEmail, EmailConfirmed = true };
+            var result = await userManager.CreateAsync(user, "Admin123");
+            if (result.Succeeded) {
+                await userManager.AddToRoleAsync(user, "Admin");
+            }
+        }
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        // Seed Coupon
+        if (!context.Coupons.Any())
+        {
+            context.Coupons.Add(new Coupon { 
+                Code = "GIAM10", 
+                DiscountPercentage = 10, 
+                IsActive = true, 
+                ExpiryDate = DateTime.Now.AddDays(30) 
+            });
+            await context.SaveChangesAsync();
+        }
+    } catch (Exception ex) {
+        // Log error
+    }
+}
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+}
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseSession();
+
+// 🔹 Authentication & Authorization Middleware
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Map các Areas (Admin)
+app.MapAreaControllerRoute(
+    name: "AdminArea",
+    areaName: "Admin",
+    pattern: "Admin/{controller=Home}/{action=Index}/{id?}");
+
+// Map Default User route
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

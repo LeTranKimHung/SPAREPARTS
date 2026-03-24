@@ -1,0 +1,81 @@
+@model IEnumerable<SparePartsManagement.Models.ServiceBooking>
+
+@{
+    ViewData["Title"] = "Lịch bảo dưỡng của tôi";
+}
+
+<div class="container my-5 py-5 min-vh-100">
+    <div class="row mb-5 pb-3 border-bottom">
+        <div class="col-12 text-center">
+            <h2 class="display-6 fw-black text-dark text-uppercase letter-spacing-1">Lịch Bảo Dưỡng Của Tôi</h2>
+            <p class="text-muted">Theo dõi và quản lý các lịch hẹn sửa chữa xe của bạn</p>
+            <div class="mx-auto bg-danger mt-3" style="height: 4px; width: 60px; border-radius: 2px;"></div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4 justify-content-center">
+            @foreach (var item in Model)
+            {
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 hover-lift bg-white">
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 pb-3 border-bottom border-light">
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark"><i class="fas fa-car text-primary me-2"></i> @item.CarModel</h5>
+                                @if (!string.IsNullOrEmpty(item.LicensePlate))
+                                {
+                                    <small class="text-muted fw-bold">Biển số: <span class="text-danger">@item.LicensePlate</span></small>
+                                }
+                            </div>
+                            <div class="mt-3 mt-md-0 text-md-end">
+                                <span class="badge 
+                                    @(item.Status == SparePartsManagement.Models.BookingStatus.Pending ? "bg-warning text-dark" : 
+                                      item.Status == SparePartsManagement.Models.BookingStatus.Confirmed ? "bg-primary" : 
+                                      item.Status == SparePartsManagement.Models.BookingStatus.Completed ? "bg-success" : "bg-danger") px-3 py-2 rounded-pill">
+                                    @(item.Status == SparePartsManagement.Models.BookingStatus.Pending ? "Chờ duyệt" : 
+                                      item.Status == SparePartsManagement.Models.BookingStatus.Confirmed ? "Đã duyệt - Sắp tới lịch" : 
+                                      item.Status == SparePartsManagement.Models.BookingStatus.Completed ? "Hoàn thành" : "Đã hủy")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="bg-light rounded-3 p-3 h-100">
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-2">Thời gian hẹn</small>
+                                    <div class="fw-bold text-dark fs-5 mb-1"><i class="far fa-calendar-alt text-primary me-1"></i> @item.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="text-danger fw-bold"><i class="far fa-clock me-1"></i> @item.TimeSlot</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="bg-light rounded-3 p-3 h-100">
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-2">Thông tin liên hệ</small>
+                                    <div class="fw-bold text-dark mb-1"><i class="far fa-user text-success me-1"></i> @item.FullName</div>
+                                    <div class="text-muted"><i class="fas fa-phone-alt me-1"></i> @item.PhoneNumber</div>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <div class="bg-light bg-opacity-50 border border-light rounded-3 p-3">
+                                    <small class="text-muted text-uppercase fw-bold d-block mb-2">Nội dung yêu cầu</small>
+                                    <p class="m-0 text-dark fst-italic">"@item.ServiceDetails"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-4" style="width: 100px; height: 100px;">
+                <i class="fas fa-calendar-times fa-3x text-muted opacity-50"></i>
+            </div>
+            <h4 class="fw-bold text-dark mb-3">Bạn chưa có lịch hẹn nào</h4>
+            <p class="text-muted mb-4">Mọi lịch bảo dưỡng của bạn sẽ được lưu trữ và theo dõi tại đây.</p>
+            <a href="/Home/Service" class="btn btn-danger btn-lg rounded-pill px-5 fw-bold shadow-sm">ĐẶT LỊCH NGAY</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,131 @@
+@using SparePartsManagement.Models
+@model IEnumerable<SparePartsManagement.Models.ServiceBooking>
+
+@{
+    ViewData["Title"] = "Quản lý Lịch Bảo dưỡng";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold mb-0 text-dark">Quản lý Lịch Bảo Dưỡng</h2>
+        <p class="text-muted">Xem, xác nhận và quản lý các lịch hẹn sửa chữa xe của khách hàng.</p>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="m-0 fw-bold"><i class="fas fa-calendar-alt text-primary me-2"></i> Danh sách Lịch hẹn</h5>
+    </div>
+    
+    <div class="card-body p-0">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success m-3">
+                <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Mã Hẹn</th>
+                        <th>Khách Hàng</th>
+                        <th>Xe & Dịch Vụ</th>
+                        <th>Thời Gian Hẹn</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-end pe-4">Thao tác duyệt</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4 fw-bold text-muted">#@item.Id</td>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.FullName</div>
+                                    <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i> @item.PhoneNumber</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-dark"><i class="fas fa-car me-1"></i> @item.CarModel</div>
+                                    @if(!string.IsNullOrEmpty(item.LicensePlate)){
+                                        <div class="small fw-bold text-danger">BS: @item.LicensePlate</div>
+                                    }
+                                    <div class="small mt-1 text-muted" style="max-width: 200px;" title="@item.ServiceDetails"><i class="fas fa-tools me-1"></i> @item.ServiceDetails</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-primary">@item.AppointmentDate.ToString("dd/MM/yyyy")</div>
+                                    <div class="small font-monospace bg-light rounded px-2 mt-1 d-inline-block border">@item.TimeSlot</div>
+                                </td>
+                                <td>
+                                    @if(item.Status == BookingStatus.Pending)
+                                    {
+                                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Chờ duyệt</span>
+                                    }
+                                    else if(item.Status == BookingStatus.Confirmed)
+                                    {
+                                        <span class="badge bg-primary"><i class="fas fa-calendar-check me-1"></i> Đã duyệt</span>
+                                    }
+                                    else if(item.Status == BookingStatus.Completed)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check-double me-1"></i> Hoàn thành</span>
+                                    }
+                                    else if(item.Status == BookingStatus.Cancelled)
+                                    {
+                                        <span class="badge bg-danger"><i class="fas fa-ban me-1"></i> Đã hủy</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Cập nhật
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <form asp-action="UpdateStatus" method="post">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <input type="hidden" name="status" value="@BookingStatus.Confirmed" />
+                                                    <button type="submit" class="dropdown-item text-primary fw-bold"><i class="fas fa-check-circle w-20px"></i> Xác nhận Hẹn</button>
+                                                </form>
+                                            </li>
+                                            <li>
+                                                <form asp-action="UpdateStatus" method="post">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <input type="hidden" name="status" value="@BookingStatus.Completed" />
+                                                    <button type="submit" class="dropdown-item text-success fw-bold"><i class="fas fa-flag-checkered w-20px"></i> Đã bảo dưỡng xong</button>
+                                                </form>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <form asp-action="UpdateStatus" method="post" onsubmit="return confirm('Bạn chắc chắn hủy lịch hẹn này?');">
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <input type="hidden" name="status" value="@BookingStatus.Cancelled" />
+                                                    <button type="submit" class="dropdown-item text-danger fw-bold"><i class="fas fa-times-circle w-20px"></i> Hủy lịch</button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted opacity-50 mb-3">
+                                    <i class="fas fa-clipboard-list fa-3x"></i>
+                                </div>
+                                <h5 class="fw-bold text-muted">Chưa có khách đăng ký Lịch Bảo dưỡng!</h5>
+                                <p class="small text-muted mb-0">Lịch đăng ký từ Website sẽ hiển thị tại đây.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<style>.w-20px{width:20px;text-align:center;}</style>
