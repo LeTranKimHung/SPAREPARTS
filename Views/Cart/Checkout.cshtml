@@ -100,7 +100,7 @@
                         </div>
 
                         <!-- Trường ẩn để gửi phí ship lên backend -->
-                        <input type="hidden" name="shippingFee" id="hiddenShippingFee" value="0" />
+                        <input type="hidden" name="shippingFee" id="hiddenShippingFee" value="@(ViewBag.ShippingFee ?? 0)" />
 
                         <script>
                             document.addEventListener("DOMContentLoaded", function () {
@@ -115,12 +115,12 @@
                                 const discountAmount = discountElement ? parseFloat(discountElement.getAttribute("data-value")) : 0;
                                 const originalTotal = subtotal - discountAmount;
 
-                                addressInput.addEventListener("input", function () {
-                                    let val = this.value.toLowerCase().trim();
+                                function updateShippingFee() {
+                                    let val = addressInput.value.toLowerCase().trim();
                                     let fee = 0;
                                     
                                     if (val === "") {
-                                        fee = 0; // Chưa nhập gì nên mặc định 0 hoặc bạn có thể thiết lập là 20k
+                                        fee = 0;
                                     }
                                     else if (val.includes("hcm") || val.includes("hồ chí minh") || val.includes("ho chi minh") || val.includes("bình dương") || val.includes("binh duong") || val.includes("đồng nai") || val.includes("dong nai")) {
                                         fee = 0;
@@ -142,7 +142,14 @@
                                     lblShippingFee.innerText = (fee > 0 ? "+ " : "") + new Intl.NumberFormat('vi-VN').format(fee) + " đ";
                                     const finalTotal = originalTotal + fee;
                                     lblTotalAmount.innerText = new Intl.NumberFormat('vi-VN').format(finalTotal) + " đ";
-                                });
+                                }
+
+                                addressInput.addEventListener("input", updateShippingFee);
+
+                                // Nếu có sẵn địa chỉ (khi validation lỗi hoặc được điền trước), tự chạy update
+                                if (addressInput.value.trim() !== "") {
+                                    updateShippingFee();
+                                }
                             });
                         </script>
 

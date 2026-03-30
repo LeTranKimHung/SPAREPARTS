@@ -44,7 +44,7 @@ public class CartController : Controller
         
         if (requestedQuantity > product.StockQuantity)
         {
-            TempData["CartError"] = $"Sản phẩm '{product.Name}' chỉ còn {product.StockQuantity} cái trong kho. Không thể thêm {quantity} cái vào giỏ cân nhắc số lượng.";
+            TempData["CartError"] = "Sản phẩm trong kho không đủ";
             return RedirectToAction("Details", "PublicProduct", new { id = id });
         }
 
@@ -94,7 +94,7 @@ public class CartController : Controller
 
         if (quantity > product.StockQuantity)
         {
-            TempData["CartError"] = $"Sản phẩm chỉ còn {product.StockQuantity} cái trong kho.";
+            TempData["CartError"] = "Sản phẩm trong kho không đủ";
             return RedirectToAction(nameof(Index));
         }
 
@@ -130,6 +130,7 @@ public class CartController : Controller
         ViewBag.Discount = discount;
         ViewBag.DiscountAmount = discountAmount;
         ViewBag.Subtotal = subtotal;
+        ViewBag.ShippingFee = 0;
         return View(order);
     }
 
@@ -191,11 +192,12 @@ public class CartController : Controller
             }
 
             await _context.SaveChangesAsync();
-            HttpContext.Session.Remove(CART_KEY);
-            HttpContext.Session.Remove("DiscountPercentage");
 
             if (paymentMethod != "VNPAY")
             {
+                HttpContext.Session.Remove(CART_KEY);
+                HttpContext.Session.Remove("DiscountPercentage");
+
                 try {
                     string mailBody = $"<h3>Cảm ơn bạn đã đặt hàng!</h3><p>Mã đơn hàng: <b>#{order.OrderId}</b></p><p>Tổng tiền: <b style=\"color:red\">{order.TotalAmount:N0}đ</b></p><p>Chúng tôi sẽ sớm liên hệ và giao hàng đến bạn.</p>";
                     await SendOrderEmailAsync(order.Email, $"XÁC NHẬN ĐƠN HÀNG #{order.OrderId} - SPARE PARTS", mailBody);
@@ -237,6 +239,7 @@ public class CartController : Controller
         ViewBag.Discount = fallbackDiscount;
         ViewBag.DiscountAmount = fallbackDiscountAmount;
         ViewBag.Subtotal = fallbackSubtotal;
+        ViewBag.ShippingFee = shippingFee;
 
         return View(order);
     }

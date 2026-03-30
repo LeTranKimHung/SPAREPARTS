@@ -66,9 +66,30 @@ using (var scope = app.Services.CreateScope())
             var result = await userManager.CreateAsync(user, "Admin123");
             if (result.Succeeded) {
                 await userManager.AddToRoleAsync(user, "Admin");
+                Console.WriteLine("✅ Admin seeded: admin@spareparts.com / Admin123");
+            } else {
+                Console.WriteLine($"❌ Error seeding admin: {string.Join(", ", result.Errors.Select(e => e.Description))}");
             }
         }
+
         var context = services.GetRequiredService<ApplicationDbContext>();
+        
+        // Seed Category
+        if (!context.Categories.Any()) {
+            context.Categories.Add(new Category { Name = "Lọc Gió", Description = "Lọc không khí cao cấp" });
+            context.Categories.Add(new Category { Name = "Nhông Sên Dĩa", Description = "Truyền động bền bỉ" });
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ Categories seeded.");
+        }
+
+        // Seed Brand
+        if (!context.Brands.Any()) {
+            context.Brands.Add(new Brand { Name = "Honda Vietnam", Description = "Chính hãng Honda" });
+            context.Brands.Add(new Brand { Name = "Yamaha Lube", Description = "Công nghệ Nhật Bản" });
+            await context.SaveChangesAsync();
+            Console.WriteLine("✅ Brands seeded.");
+        }
+
         // Seed Coupon
         if (!context.Coupons.Any())
         {
@@ -79,9 +100,19 @@ using (var scope = app.Services.CreateScope())
                 ExpiryDate = DateTime.Now.AddDays(30) 
             });
             await context.SaveChangesAsync();
+            Console.WriteLine("✅ GIAM10 coupon seeded.");
+        }
+
+        // 🧹 Tự động dọn dẹp các sản phẩm rác từ việc chạy UI Test
+        var testProducts = context.Products.Where(p => p.Name.StartsWith("UI-TEST-")).ToList();
+        if (testProducts.Any())
+        {
+            context.Products.RemoveRange(testProducts);
+            await context.SaveChangesAsync();
+            Console.WriteLine($"🧹 Cleaned {testProducts.Count} UI-TEST clutter products.");
         }
     } catch (Exception ex) {
-        // Log error
+        Console.WriteLine($"💥 Seeding failed: {ex.Message}");
     }
 }
 

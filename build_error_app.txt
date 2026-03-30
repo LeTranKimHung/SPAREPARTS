@@ -1,0 +1,25 @@
+﻿  Determining projects to restore...
+  All projects are up-to-date for restore.
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(1,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(2,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(3,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(4,7): error CS0246: The type or namespace name 'Xunit' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(11,26): error CS0246: The type or namespace name 'IWebDriver' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(22,10): error CS0246: The type or namespace name 'FactAttribute' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(22,10): error CS0246: The type or namespace name 'Fact' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+
+Build FAILED.
+
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(1,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(2,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(3,7): error CS0246: The type or namespace name 'OpenQA' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(4,7): error CS0246: The type or namespace name 'Xunit' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(11,26): error CS0246: The type or namespace name 'IWebDriver' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(22,10): error CS0246: The type or namespace name 'FactAttribute' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+D:\SparePartsManagement\SparePartsManagement.Tests.UI\ProductPageTests.cs(22,10): error CS0246: The type or namespace name 'Fact' could not be found (are you missing a using directive or an assembly reference?) [D:\SparePartsManagement\SparePartsManagement.csproj]
+    0 Warning(s)
+    7 Error(s)
+
+Time Elapsed 00:00:01.94
+
+Workload updates are available. Run `dotnet workload list` for more information.

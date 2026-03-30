@@ -19,4 +19,11 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="SparePartsManagement.Tests.UI\**" />
+    <Content Remove="SparePartsManagement.Tests.UI\**" />
+    <EmbeddedResource Remove="SparePartsManagement.Tests.UI\**" />
+    <None Remove="SparePartsManagement.Tests.UI\**" />
+  </ItemGroup>
+
 </Project>

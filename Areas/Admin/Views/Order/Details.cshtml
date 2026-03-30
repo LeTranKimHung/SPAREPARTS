@@ -71,9 +71,10 @@
             @{
                 decimal parsedShippingFee = 0;
                 string addrStr = Model.ShippingAddress ?? "";
-                if (addrStr.StartsWith("[Phí Ship:")) {
-                    int sIdx = addrStr.IndexOf(":") + 1;
-                    int eIdx = addrStr.IndexOf("đ]");
+                int startTagIdx = addrStr.IndexOf("[Phí Ship:");
+                if (startTagIdx >= 0) {
+                    int sIdx = addrStr.IndexOf(":", startTagIdx) + 1;
+                    int eIdx = addrStr.IndexOf("đ]", sIdx);
                     if (sIdx > 0 && eIdx > sIdx) {
                         string numClean = addrStr.Substring(sIdx, eIdx - sIdx).Replace(".", "").Replace(",", "").Trim();
                         decimal.TryParse(numClean, out parsedShippingFee);
